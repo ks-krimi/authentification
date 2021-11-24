@@ -6,7 +6,7 @@ module.exports.register = async (req, res, next) => {
   const { nom, prenom, email, password } = req.body;
   try {
     const user = await userModel.create({ nom, prenom, email, password });
-    res.status(201).json({ succes: true, user });
+    sendToken(user, 201, res);
   } catch (error) {
     next(error);
   }
@@ -33,7 +33,7 @@ module.exports.login = async (req, res, next) => {
           const error = new CustomError("le mot de passe est incorrect", 400);
           next(error);
         } else {
-          res.status(200).json({ success: true, user: user._id });
+          sendToken(user, 200, res);
         }
       }
     } catch (error) {
@@ -55,4 +55,9 @@ module.exports.resetpassword = (req, res, next) => {
 /* route pour la deconnexion */
 module.exports.logout = (req, res, next) => {
   res.send("logout route");
+};
+
+const sendToken = (user, statusCode, res) => {
+  const token = user.createToken();
+  res.status(statusCode).json({ success: true, token });
 };
