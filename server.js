@@ -11,6 +11,7 @@ require("dotenv").config({ path: "./.env" });
 require("./config/db_conf");
 
 const express = require("express");
+const errorHandler = require("./middlewares/errorHandler");
 const authRoutes = require("./routes/auth.routes");
 
 /* initialisation de l'express */
@@ -24,6 +25,12 @@ app.use(express.json());
 
 /* les routes */
 app.use("/api/auth", authRoutes);
+
+/*
+ * middleware erreur, renvoi les messages d'erreurs et le status code
+ * doit etre placer au dessous de tout les routes
+ */
+app.use(errorHandler);
 
 /* lancement du serveur */
 const server = app.listen(process.env.PORT, () => {

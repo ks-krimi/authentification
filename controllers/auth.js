@@ -1,4 +1,5 @@
 const userModel = require("../models/User");
+const CustomError = require("../utils/CustomError");
 
 /* route pour le register */
 module.exports.register = async (req, res, next) => {
@@ -7,7 +8,7 @@ module.exports.register = async (req, res, next) => {
     const user = await userModel.create({ nom, prenom, email, password });
     res.status(201).json({ succes: true, user });
   } catch (error) {
-    res.status(500).json({ succes: false, error: error.message });
+    next(error);
   }
 };
 
@@ -15,28 +16,28 @@ module.exports.register = async (req, res, next) => {
 module.exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res
-      .status(400)
-      .json({ succes: false, error: "email ou password sont requis" });
+    const error = new CustomError(
+      "l'email et le mot de passe sont requis",
+      400
+    );
+    next(error);
   } else {
     try {
       const user = await userModel.findOne({ email }).select("+password");
       if (!user) {
-        res
-          .status(404)
-          .json({ succes: false, error: "Utilisateur n'existe pas" });
+        const error = new CustomError("l'utilisateur n'existe pas", 404);
+        next(error);
       } else {
         const isMatched = await user.matchPassword(password);
         if (!isMatched) {
-          res
-            .status(404)
-            .json({ success: false, error: "Mot de passe incorrect" });
+          const error = new CustomError("le mot de passe est incorrect", 400);
+          next(error);
         } else {
           res.status(200).json({ success: true, user: user._id });
         }
       }
     } catch (error) {
-      res.status(500).json({ succes: false, error: error.message });
+      next(error);
     }
   }
 };
