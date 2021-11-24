@@ -13,6 +13,7 @@ require("./config/db_conf");
 const express = require("express");
 const errorHandler = require("./middlewares/errorHandler");
 const authRoutes = require("./routes/auth.routes");
+const welcome = require("./routes/welcome.routes");
 
 /* initialisation de l'express */
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.json());
 
 /* les routes */
 app.use("/api/auth", authRoutes);
+app.use("/api/welcome", welcome);
 
 /*
  * middleware erreur, renvoi les messages d'erreurs et le status code
