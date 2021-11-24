@@ -2,9 +2,13 @@
 require("dotenv").config({ path: "./.env" });
 
 const express = require("express");
+const authRoutes = require("./routes/auth.routes");
 
 /* middleware qui convertissent les requetes en json */
 const app = express(express.json());
+
+/* les routes */
+app.use("/api/auth", authRoutes);
 
 /* lancement du serveur */
 const server = app.listen(process.env.PORT, () => {
