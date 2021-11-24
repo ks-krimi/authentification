@@ -1,11 +1,26 @@
-/* import du ficher .env */
+/*
+ * import du ficher .env
+ * doit etre importer au premier
+ */
 require("dotenv").config({ path: "./.env" });
+
+/*
+ * mongoDb config.
+ * doit etre importer après le dotenv
+ */
+require("./config/db_conf");
 
 const express = require("express");
 const authRoutes = require("./routes/auth.routes");
 
-/* middleware qui convertissent les requetes en json */
-const app = express(express.json());
+/* initialisation de l'express */
+const app = express();
+
+/*
+ * middleware qui convertis les requetes en json,
+ * pour que req.body ne soit pas undefined
+ */
+app.use(express.json());
 
 /* les routes */
 app.use("/api/auth", authRoutes);
@@ -17,7 +32,7 @@ const server = app.listen(process.env.PORT, () => {
 
 /* déclanche lorsqu'il y a un ou plusieurs erreurs */
 process.on("unhandledRejection", (err, promess) => {
-  console.log("Il y a ces erreurs:", err);
+  console.error("Error log:", err);
   server.close(() => {
     process.exit(1);
   });

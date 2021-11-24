@@ -48,8 +48,11 @@ const userSchema = new mongoose.Schema(
 
 /* hash le mot de passe avant la sauvegarde du model */
 userSchema.pre("save", async function (next) {
-  const salt = bycript.genSalt();
-  this.password = bcrypt.hash(this.password, salt);
+  if (!this.isModified("password")) {
+    next();
+  }
+  const salt = await bcrypt.genSalt();
+  this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 

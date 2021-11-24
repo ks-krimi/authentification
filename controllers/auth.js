@@ -1,6 +1,14 @@
+const userModel = require("../models/User");
+
 /* route pour le register */
-module.exports.register = (req, res, next) => {
-  res.send("register route");
+module.exports.register = async (req, res, next) => {
+  const { nom, prenom, email, password } = req.body;
+  try {
+    const user = await userModel.create({ nom, prenom, email, password });
+    res.status(201).json({ succes: true, user });
+  } catch (error) {
+    res.status(500).json({ succes: false, error: error.message });
+  }
 };
 
 /* route pour le login */
