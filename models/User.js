@@ -70,7 +70,7 @@ userSchema.methods.createToken = function () {
   });
 };
 
-/*  */
+/* création d'un reset password token avec crypto */
 userSchema.methods.getRestPasswordToken = function () {
   const resetToken = crypto.randomBytes(20).toString("hex");
   this.restPasswordToken = crypto

@@ -1,6 +1,7 @@
 const userModel = require("../models/User");
 const CustomError = require("../utils/CustomError");
 const { sendEmailWithSgMail } = require("../utils/sendEmail");
+const crypto = require("crypto");
 
 /* route pour le register */
 module.exports.register = async (req, res, next) => {
@@ -17,11 +18,7 @@ module.exports.register = async (req, res, next) => {
 module.exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    const error = new CustomError(
-      "l'email et le mot de passe sont requis",
-      400
-    );
-    next(error);
+    next(new CustomError("l'email et le mot de passe sont requis", 400));
   } else {
     try {
       const user = await userModel.findOne({ email }).select("+password");
@@ -53,11 +50,12 @@ module.exports.forgotpassword = async (req, res, next) => {
     } else {
       const resetToken = user.getRestPasswordToken();
       await user.save();
-      const resetUrl = `${process.env.ORIGIN}/resetpassword:${resetToken}`;
+      const resetUrl = `${process.env.ORIGIN}/resetpassword/${resetToken}`;
 
       const message = `
         <h1>Vous avez demandé de réinitialiser votre mot de passe</h1>
         <p>S'il vous plait, veuiller suivre ce lien pour réinitialiser votre mot de passe.</p>
+        <p>Ce lien sera expirer dans 15 minutes.</p>
         <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
       `;
 
@@ -83,9 +81,31 @@ module.exports.forgotpassword = async (req, res, next) => {
   }
 };
 
-/* route pour le changement mot de passe */
-module.exports.resetpassword = (req, res, next) => {
-  res.send("reset password route");
+/* route pour réinitialiser le mot de passe */
+module.exports.resetpassword = async (req, res, next) => {
+  const token = crypto
+    .createHash("sha256")
+    .update(req.params.resetToken)
+    .digest("hex");
+  try {
+    const user = await userModel.findOne({
+      restPasswordToken: token,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+    if (!user) {
+      next(new CustomError("Token invalide ou expirer", 400));
+    } else {
+      user.password = req.body.password;
+      user.restPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+      res
+        .status(201)
+        .json({ success: true, message: "mot de passe réinitialiser" });
+    }
+  } catch (error) {
+    next(error);
+  }
 };
 
 /* route pour la deconnexion */
