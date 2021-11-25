@@ -11,7 +11,7 @@ const {
 
 router.post("/register", register);
 router.post("/login", login);
-router.route("fogotpassword").post(forgotpassword);
+router.route("/forgotpassword").post(forgotpassword);
 router.route("/resetpassword/:resetToken").put(resetpassword);
 router.route("/logout").get(logout);
 

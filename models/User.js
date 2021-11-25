@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const { isAlpha, isEmail } = require("validator");
 const jwt = require("jsonwebtoken");
 
@@ -67,6 +68,17 @@ userSchema.methods.createToken = function () {
   return jwt.sign({ id: this._id }, process.env.TOKEN_SECRET, {
     expiresIn: process.env.TOKEN_EXPIRES_IN || "24h",
   });
+};
+
+/*  */
+userSchema.methods.getRestPasswordToken = function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+  this.restPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+  return resetToken;
 };
 
 const userModel = mongoose.model("userModel", userSchema, "users");
